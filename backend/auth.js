@@ -1,7 +1,7 @@
 import jwt  from "jsonwebtoken";
 
 function authenticate(req, res, next) {
-    const { username, password } = req.query;
+    const { username } = req.query;
     const token = req.headers['authorization'].split(" ")[1];
     
     if (!token) {
@@ -9,13 +9,13 @@ function authenticate(req, res, next) {
     }
 
     try {
-        const decoded = jwt.verify(token, "Se5ret");
-        if (decoded.username !== username || decoded.password !== password) {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET );
+        if (decoded.username !== username) {
             return res.status(401).send("Access Denied: Invalid Token!");
         }       
         next();
     } catch (err) {
-        return res.status(400).send("Invalid Token");
+        return res.status(400).send(`Invalid Token ${err}`);
     }
 }
 

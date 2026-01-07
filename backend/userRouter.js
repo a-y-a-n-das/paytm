@@ -7,16 +7,16 @@ import zod from "zod";
 
 const loginSchema = zod.object({
   username: zod.string().min(3),
-  password: zod.string().min(4),
+  password: zod.string().min(1),
 });
 const signupSchema = zod.object({
   username: zod.string().min(3),
-  password: zod.string().min(4),
+  password: zod.string().min(1),
   firstName: zod.string().min(1),
   lastName: zod.string().min(1),
 });
 
-router.get("/login", async (req, res) => {
+router.post("/login", async (req, res) => {
   const username = req.query.username;
   const password = req.query.password;
   const success = loginSchema.safeParse({ username, password });
@@ -37,12 +37,13 @@ router.get("/login", async (req, res) => {
   res.json({ message: "Login successful", token });
 });
 router.post("/signup", async (req, res) => {
-  const username = req.query.username;
-  const password = req.query.password;
-  const sucess = signupSchema.safeParse({ username, password });
+  const {username, password, firstName, lastName} = req.body;
+
+  const sucess = signupSchema.safeParse({ username, password, firstName, lastName });
   if (!sucess.success) {
     return res.status(400).send("Invalid Credentials");
   }
+  
   const token = jwt.sign({ username, password }, "Se5ret", { expiresIn: "1h" });
 
   const user = await User.findOne({ username: username });
@@ -50,16 +51,19 @@ router.post("/signup", async (req, res) => {
     return res.status(400).send("User already exists");
   }
 
-  const newUser = new User({
+  const newUser = await User.create({
     username: username,
+    firstName: firstName,
+    lastName: lastName, 
     password: password,
+    balance: 0,
   });
 
-  await newUser.save();
-  res.json({ token, message: "User created successfully" });
+  
+  res.json({ token, message: "User created successfully", user: newUser });
 });
 
-router.post("/profile", authenticate, async (req, res) => {
+router.get("/profile", authenticate, async (req, res) => {
   const username = req.query.username;
   const user = await User.findOne({ username: username });
   if (!user) {
@@ -69,11 +73,12 @@ router.post("/profile", authenticate, async (req, res) => {
     username: user.username,
     firstName: user.firstName,
     lastName: user.lastName,
+    balance: user.balance,
   });
 });
 
-router.post("/like", async (req, res) => {
-  const string = req.body.string;
+router.get("/like", async (req, res) => {
+  const string = req.query.string;
   const usersList = await User.find({
     $or: [
       { firstName: { $regex: `^${string}`, $options: "i" } },
