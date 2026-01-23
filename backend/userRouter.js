@@ -5,6 +5,8 @@ import User from "./db.js";
 import authenticate from "./auth.js";
 import zod from "zod";
 
+const JWT_SECRET = process.env.JWT_SECRET || "Se5ret";
+
 const loginSchema = zod.object({
   username: zod.string().min(3),
   password: zod.string().min(1),
@@ -32,7 +34,7 @@ router.post("/login", async (req, res) => {
     return res.status(400).send("Invalid Credentials");
   }
 
-  const token = jwt.sign({ username, password }, "Se5ret", { expiresIn: "1h" });
+  const token = jwt.sign({ username, password }, JWT_SECRET, { expiresIn: "1h" });
 
   res.json({ message: "Login successful", token });
 });
@@ -44,7 +46,7 @@ router.post("/signup", async (req, res) => {
     return res.status(400).send("Invalid Credentials");
   }
   
-  const token = jwt.sign({ username, password }, "Se5ret", { expiresIn: "1h" });
+  const token = jwt.sign({ username, password }, JWT_SECRET, { expiresIn: "1h" });
 
   const user = await User.findOne({ username: username });
   if (user) {
