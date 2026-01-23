@@ -56,7 +56,7 @@ router.post("/signup", async (req, res) => {
     firstName: firstName,
     lastName: lastName, 
     password: password,
-    balance: 0,
+    balance: 10000,
   });
 
   

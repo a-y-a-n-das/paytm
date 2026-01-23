@@ -2,13 +2,11 @@ import { useRecoilState } from "recoil";
 import { usernameAtom } from "../atoms/userAtom";
 import axios from "axios";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import "../index.css";
 
 function Login() {
   const [username, setUsername] = useRecoilState(usernameAtom);
   const [password, setPassword] = useState("");
-  const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -22,11 +20,10 @@ function Login() {
       console.log("Login successful:", response.data);
       localStorage.setItem("username", username);
       localStorage.setItem("token", response.data.token);
+      window.location.href = "/dashboard";
     } catch (error) {
       console.error("Login failed:", error);
-    } finally {
-      navigate("/dashboard");
-    }
+    } 
   };
 
   return (
@@ -48,7 +45,7 @@ function Login() {
           className="input-field"
         />
         <button onClick={handleSubmit} className="btn">Login</button>
-        <p className="link-text">Don't have an account? <a href="/signup">Sign Up</a></p>
+        <p className="link-text">Don&apos;t have an account? <a href="/signup">Sign Up</a></p>
       </div>
     </div>
   );
